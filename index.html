@@ -134,9 +134,9 @@ p.classList.toggle('open');
 }
 </script>
 
-<py-config>packages = []</py-config>
+<script type="py-config">packages = []</script>
 
-<py-script>
+<script type="py">
 from pyscript import when
 from js import document
 import datetime
@@ -513,7 +513,7 @@ from js import setTimeout
 def auto_trigger():
     document.getElementById("btn-pai").click()
 setTimeout(auto_trigger, 800)
-</py-script>
+</script>
 
 </body>
 </html>
