@@ -3,203 +3,312 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>奇门遁甲排盘引擎</title>
-
-<!-- PyScript -->
+<title>奇门遁甲排盘</title>
 <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
 <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f0; color: #333; padding: 10px; }
-h1 { text-align: center; color: #8B0000; font-size: 1.5em; margin: 15px 0; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 600px; margin: 0 auto 15px; }
-.form-grid label { font-size: 0.85em; color: #666; }
-.form-grid input, .form-grid select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
-button { display: block; width: 100%; max-width: 600px; margin: 10px auto; padding: 12px; background: #8B0000; color: white; border: none; border-radius: 6px; font-size: 1em; cursor: pointer; }
-button:disabled { background: #999; }
-button:active { background: #600; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:linear-gradient(180deg,#1a0000 0%,#2d0000 50%,#1a0000 100%);color:#e8d5a0;min-height:100vh}
+.banner{text-align:center;padding:30px 15px 20px;background:radial-gradient(ellipse at center,rgba(139,0,0,0.4) 0%,transparent 70%)}
+.banner h1{font-size:2.2em;font-weight:700;letter-spacing:8px;text-shadow:0 0 20px rgba(212,175,55,0.5);margin-bottom:8px}
+.banner .sub{color:#c9a84c;font-size:0.95em;letter-spacing:4px;opacity:0.8}
+.luopan{font-size:3em;margin-bottom:10px;animation:spin 20s linear infinite;display:inline-block}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
-.pan-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; max-width: 500px; margin: 15px auto; }
-.gong { background: white; border: 1px solid #ccc; border-radius: 6px; padding: 8px; font-size: 0.75em; min-height: 100px; }
-.gong-header { font-weight: bold; color: #8B0000; font-size: 0.9em; margin-bottom: 4px; }
-.gong-row { margin: 2px 0; color: #444; font-size: 0.85em; }
-.gong-row .label { color: #999; }
-.gong-daji { border-color: #28a745; background: #f0fff0; }
-.gong-jixiong { border-color: #ffc107; }
-.gong-xiong { border-color: #dc3545; background: #fff0f0; }
-.gong-daxiong { border-color: #8B0000; background: #fff5f5; }
+.card{background:rgba(60,10,10,0.6);border:1px solid rgba(212,175,55,0.3);border-radius:12px;margin:12px auto;padding:16px;max-width:600px;backdrop-filter:blur(4px)}
+.card-title{color:#d4af37;font-size:1.1em;font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(212,175,55,0.2);display:flex;align-items:center;gap:8px}
 
-.info-box { max-width: 600px; margin: 10px auto; background: white; padding: 12px; border-radius: 6px; font-size: 0.85em; }
-.info-box h3 { color: #8B0000; font-size: 1em; margin-bottom: 8px; }
-.analysis-result { max-width: 600px; margin: 10px auto; background: white; padding: 12px; border-radius: 6px; font-size: 0.85em; line-height: 1.6; white-space: pre-wrap; }
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-row.full{grid-template-columns:1fr}
+.form-row label{display:block;font-size:0.8em;color:#b89f6a;margin-bottom:4px}
+.form-row input,.form-row select{width:100%;padding:10px 12px;border:1px solid rgba(212,175,55,0.25);border-radius:8px;background:rgba(0,0,0,0.3);color:#e8d5a0;font-size:0.95em;outline:none}
+.form-row input:focus,.form-row select:focus{border-color:#d4af37}
+.form-row input::placeholder{color:#6a5a3a}
 
-.loading { text-align: center; padding: 20px; color: #666; }
-@media (min-width: 768px) { body { padding: 20px; } h1 { font-size: 2em; } }
+.btn-main{display:block;width:100%;max-width:600px;margin:15px auto;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,#d4af37 0%,#b8941d 100%);color:#1a0000;font-size:1.1em;font-weight:700;letter-spacing:4px;cursor:pointer;transition:all 0.3s}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(212,175,55,0.4)}
+.btn-main:disabled{background:#4a3a1a;color:#8a7a5a;cursor:not-allowed;transform:none;box-shadow:none}
+
+.advanced-toggle{text-align:center;margin:8px 0;cursor:pointer;color:#a09060;font-size:0.85em}
+.advanced-toggle:hover{color:#d4af37}
+.advanced-panel{display:none}
+.advanced-panel.open{display:block}
+
+/* 九宫格 */
+.pan-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;max-width:500px;margin:15px auto}
+.gong{background:rgba(0,0,0,0.4);border:1px solid rgba(212,175,55,0.15);border-radius:8px;padding:10px 8px;font-size:0.72em;min-height:110px;position:relative;overflow:hidden}
+.gong::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:transparent}
+.gong-header{font-weight:700;color:#d4af37;font-size:0.9em;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center}
+.gong-star{color:#ffd700;font-size:1.1em}
+.gong-row{margin:2px 0;color:#c9b896;font-size:0.9em;line-height:1.5}
+.gong-row .label{color:#8a7a5a;margin-right:4px}
+.gong-ping{text-align:center;margin-top:4px;padding-top:4px;border-top:1px solid rgba(212,175,55,0.1);font-weight:700;font-size:0.95em}
+
+.gong-daji{border-color:rgba(40,167,69,0.5);background:rgba(40,167,69,0.08)}
+.gong-daji::before{background:rgba(40,167,69,0.6)}
+.gong-jixiong{border-color:rgba(255,193,7,0.5);background:rgba(255,193,7,0.05)}
+.gong-jixiong::before{background:rgba(255,193,7,0.5)}
+.gong-xiong{border-color:rgba(220,53,69,0.5);background:rgba(220,53,69,0.06)}
+.gong-xiong::before{background:rgba(220,53,69,0.5)}
+.gong-daxiong{border-color:rgba(139,0,0,0.6);background:rgba(139,0,0,0.1)}
+.gong-daxiong::before{background:rgba(139,0,0,0.7)}
+
+.info-line{color:#c9b896;font-size:0.85em;line-height:1.8}
+.info-line b{color:#d4af37}
+
+.analysis-box{background:rgba(0,0,0,0.3);border-left:3px solid #d4af37;padding:12px;margin-top:10px;border-radius:0 8px 8px 0}
+.analysis-box h4{color:#d4af37;margin-bottom:8px;font-size:0.95em}
+.analysis-box p{color:#c9b896;font-size:0.85em;line-height:1.7;margin:4px 0}
+
+.sanchuan{display:flex;justify-content:center;gap:20px;padding:10px;font-size:0.85em;color:#c9b896}
+.sanchuan span b{color:#d4af37}
+
+.loading{text-align:center;padding:30px;color:#a09060}
+.hidden{display:none}
+
+@media(min-width:768px){body{padding:0 20px}.banner h1{font-size:2.8em}.gong{font-size:0.8em;min-height:130px}}
 </style>
 </head>
 <body>
 
-<h1>☯ 奇门遁甲排盘引擎</h1>
-
-<div class="form-grid">
-    <div><label>公历年</label><input type="number" id="year" value="2026"></div>
-    <div><label>公历月</label><input type="number" id="month" value="5"></div>
-    <div><label>公历日</label><input type="number" id="day" value="1"></div>
-    <div><label>时辰（0-23）</label><input type="number" id="hour" value="20"></div>
-    <div><label>节气</label>
-        <select id="jieqi">
-            <option value="立春">立春</option><option value="雨水">雨水</option>
-            <option value="惊蛰">惊蛰</option><option value="春分">春分</option>
-            <option value="清明">清明</option><option value="谷雨" selected>谷雨</option>
-            <option value="立夏">立夏</option><option value="小满">小满</option>
-            <option value="芒种">芒种</option><option value="夏至">夏至</option>
-            <option value="小暑">小暑</option><option value="大暑">大暑</option>
-            <option value="立秋">立秋</option><option value="处暑">处暑</option>
-            <option value="白露">白露</option><option value="秋分">秋分</option>
-            <option value="寒露">寒露</option><option value="霜降">霜降</option>
-            <option value="立冬">立冬</option><option value="小雪">小雪</option>
-            <option value="大雪">大雪</option><option value="冬至">冬至</option>
-            <option value="小寒">小寒</option><option value="大寒">大寒</option>
-        </select>
-    </div>
-    <div><label>农历月（1-12）</label><input type="number" id="lunar_month" value="3" min="1" max="12"></div>
-    <div><label>年柱（如庚寅）</label><input type="text" id="nianzhu" value="丙午"></div>
-    <div><label>月柱（如壬辰）</label><input type="text" id="yuezhu" value="壬辰"></div>
-    <div><label>日柱（如乙亥）</label><input type="text" id="rizhu" value="乙亥"></div>
-    <div><label>时柱（如丙戌）</label><input type="text" id="shizhu" value="丙戌"></div>
-    <div><label>年命（如庚寅）</label><input type="text" id="nianming" value="庚寅"></div>
-    <div><label>性别</label>
-        <select id="gender"><option value="男" selected>男</option><option value="女">女</option></select>
-    </div>
-    <div><label>占事类型</label>
-        <select id="question">
-            <option value="">-- 请选择 --</option>
-            <option value="考试">考试</option>
-            <option value="走失">走失</option>
-            <option value="疾病">疾病</option>
-            <option value="投资">投资</option>
-            <option value="工作">工作</option>
-            <option value="求财">求财</option>
-            <option value="婚姻">婚姻</option>
-            <option value="出行">出行</option>
-            <option value="竞争">竞争</option>
-        </select>
-    </div>
-    <div><label>合婚对方年命</label><input type="text" id="marriage" placeholder="如辛卯"></div>
-    <div><label>太岁</label><input type="text" id="taisui" placeholder="如庚寅"></div>
-    <div><label>外应（空格分隔）</label><input type="text" id="waiying" placeholder="烟雾障空"></div>
+<div class="banner">
+<div class="luopan">☯</div>
+<h1>奇门遁甲</h1>
+<div class="sub">运筹帷幄 · 决胜千里</div>
 </div>
 
-<button id="btn-pai" disabled>⏳ 正在加载Python引擎...</button>
+<div class="card">
+<div class="card-title">📅 起局信息</div>
+<div class="form-row">
+<div><label>公历年</label><input type="number" id="year" value="2026"></div>
+<div><label>公历月</label><input type="number" id="month" value="5" min="1" max="12"></div>
+</div>
+<div class="form-row">
+<div><label>公历日</label><input type="number" id="day" value="13" min="1" max="31"></div>
+<div><label>时辰（0-23）</label><input type="number" id="hour" value="14" min="0" max="23"></div>
+</div>
+<div class="form-row">
+<div><label>性别</label><select id="gender"><option value="男" selected>男</option><option value="女">女</option></select></div>
+<div><label>占事类型</label><select id="question"><option value="">-- 请选择 --</option><option value="考试">考试</option><option value="走失">走失</option><option value="疾病">疾病</option><option value="投资">投资</option><option value="工作">工作</option><option value="求财">求财</option><option value="婚姻">婚姻</option><option value="出行">出行</option><option value="竞争">竞争</option></select></div>
+</div>
+<div class="form-row full">
+<div><label>年命（出生年柱，如庚寅）</label><input type="text" id="nianming" placeholder="选填，用于个人运势分析"></div>
+</div>
 
-<div id="result"></div>
+<div class="advanced-toggle" onclick="toggleAdvanced()">⚙️ 高级设置（手动调整四柱/节气/局数）</div>
+<div class="advanced-panel" id="advancedPanel">
+<div class="form-row">
+<div><label>节气</label><select id="jieqi"><option value="立春">立春</option><option value="雨水">雨水</option><option value="惊蛰">惊蛰</option><option value="春分">春分</option><option value="清明">清明</option><option value="谷雨" selected>谷雨</option><option value="立夏">立夏</option><option value="小满">小满</option><option value="芒种">芒种</option><option value="夏至">夏至</option><option value="小暑">小暑</option><option value="大暑">大暑</option><option value="立秋">立秋</option><option value="处暑">处暑</option><option value="白露">白露</option><option value="秋分">秋分</option><option value="寒露">寒露</option><option value="霜降">霜降</option><option value="立冬">立冬</option><option value="小雪">小雪</option><option value="大雪">大雪</option><option value="冬至">冬至</option><option value="小寒">小寒</option><option value="大寒">大寒</option></select></div>
+<div><label>农历月（1-12）</label><input type="number" id="lunar_month" value="3" min="1" max="12"></div>
+</div>
+<div class="form-row">
+<div><label>年柱</label><input type="text" id="nianzhu" value="丙午"></div>
+<div><label>月柱</label><input type="text" id="yuezhu" value="壬辰"></div>
+</div>
+<div class="form-row">
+<div><label>日柱</label><input type="text" id="rizhu" value="乙亥"></div>
+<div><label>时柱</label><input type="text" id="shizhu" value="丙戌"></div>
+</div>
+<div class="form-row">
+<div><label>阴阳遁</label><select id="yinyang"><option value="阳" selected>阳遁</option><option value="阴">阴遁</option></select></div>
+<div><label>局数（1-9）</label><input type="number" id="jushu" value="5" min="1" max="9"></div>
+</div>
+<div class="form-row">
+<div><label>合婚对方年命</label><input type="text" id="marriage" placeholder="如辛卯"></div>
+<div><label>太岁</label><input type="text" id="taisui" placeholder="如庚寅"></div>
+</div>
+<div class="form-row full">
+<div><label>外应（空格分隔）</label><input type="text" id="waiying" placeholder="如：烟雾障空 雷声"></div>
+</div>
+</div>
 
-<!-- PyScript 配置 -->
-<py-config>
-    packages = []
-</py-config>
+<button id="btn-pai" disabled>⏳ 正在加载排盘引擎...</button>
+</div>
 
-<!-- 核心排盘逻辑 -->
+<div id="result" class="hidden"></div>
+
+<script>
+function toggleAdvanced(){
+var p=document.getElementById('advancedPanel');
+p.classList.toggle('open');
+}
+</script>
+
+<py-config>packages = []</py-config>
+
 <py-script>
 from pyscript import when
 from js import document
+import datetime
 
-# ========== 奇门遁甲核心排盘引擎 ==========
-
-GAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸']
-ZHI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
-BA = ['开门', '休门', '生门', '伤门', '杜门', '景门', '死门', '惊门']
-BA_SHEN = ['值符', '螣蛇', '太阴', '六合', '白虎', '玄武', '九地', '九天']
-JIUXING = ['天蓬', '天任', '天冲', '天辅', '天英', '天芮', '天柱', '天心']
+# ========== 常量 ==========
+GAN = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸']
+ZHI = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥']
+BA = ['开门','休门','生门','伤门','杜门','景门','死门','惊门']
+BA_SHEN = ['值符','螣蛇','太阴','六合','白虎','玄武','九地','九天']
+JIUXING = ['天蓬','天任','天冲','天辅','天英','天芮','天柱','天心']
 
 XUN_KONG = {
-    '甲子': '戌亥', '甲戌': '申酉', '甲申': '午未', '甲午': '辰巳',
-    '甲辰': '寅卯', '甲寅': '子丑',
+    '甲子':'戌亥','甲戌':'申酉','甲申':'午未','甲午':'辰巳',
+    '甲辰':'寅卯','甲寅':'子丑',
 }
 
-ZHI_GONG = {'子':1, '丑':8, '寅':3, '卯':4, '辰':5, '巳':6, '午':7, '未':8, '申':1, '酉':2, '戌':5, '亥':6}
-JIANG12 = ['登明', '河魁', '从魁', '传送', '小吉', '胜光', '太乙', '天罡', '太冲', '功曹', '大吉', '神后']
-
-SHENPAN_SHA = {'螣蛇':'磁场杂乱','白虎':'有冲煞','玄武':'阴气重暗藏煞','太阴':'阴气太重'}
+ZHI_GONG = {'子':1,'丑':8,'寅':3,'卯':4,'辰':5,'巳':6,'午':7,'未':8,'申':1,'酉':2,'戌':5,'亥':6}
+JIANG12 = ['登明','河魁','从魁','传送','小吉','胜光','太乙','天罡','太冲','功曹','大吉','神后']
 
 XING_JIXIONG = {
-    '天蓬': {'1':'大吉','6':'大吉','2':'大凶','7':'大凶','3':'平','4':'吉','8':'吉','9':'凶'},
-    '天任': {'8':'大吉','1':'吉','3':'吉','4':'吉','9':'平','2':'凶','7':'凶','6':'凶'},
-    '天冲': {'3':'大吉','4':'大吉','1':'吉','9':'吉','8':'平','7':'凶','2':'凶','6':'凶'},
-    '天辅': {'4':'大吉','9':'大吉','3':'吉','1':'吉','8':'平','2':'凶','7':'凶','6':'凶'},
-    '天英': {'9':'大吉','2':'吉','4':'吉','3':'平','1':'平','8':'凶','7':'凶','6':'凶'},
-    '天芮': {'2':'吉','8':'平','1':'平','9':'平','3':'凶','4':'凶','6':'大凶','7':'大凶'},
-    '天柱': {'7':'吉','6':'吉','2':'平','1':'平','9':'凶','4':'凶','3':'凶','8':'大凶'},
-    '天心': {'6':'大吉','7':'大吉','1':'吉','9':'吉','4':'平','3':'凶','2':'凶','8':'凶'},
+    '天蓬':{'1':'大吉','6':'大吉','2':'大凶','7':'大凶','3':'平','4':'吉','8':'吉','9':'凶'},
+    '天任':{'8':'大吉','1':'吉','3':'吉','4':'吉','9':'平','2':'凶','7':'凶','6':'凶'},
+    '天冲':{'3':'大吉','4':'大吉','1':'吉','9':'吉','8':'平','7':'凶','2':'凶','6':'凶'},
+    '天辅':{'4':'大吉','9':'大吉','3':'吉','1':'吉','8':'平','2':'凶','7':'凶','6':'凶'},
+    '天英':{'9':'大吉','2':'吉','4':'吉','3':'平','1':'平','8':'凶','7':'凶','6':'凶'},
+    '天芮':{'2':'吉','8':'平','1':'平','9':'平','3':'凶','4':'凶','6':'大凶','7':'大凶'},
+    '天柱':{'7':'吉','6':'吉','2':'平','1':'平','9':'凶','4':'凶','3':'凶','8':'大凶'},
+    '天心':{'6':'大吉','7':'大吉','1':'吉','9':'吉','4':'平','3':'凶','2':'凶','8':'凶'},
 }
 
 MEN_JIXIONG = {
-    '开门': {'6':'大吉','1':'吉','7':'吉','4':'平','9':'平','3':'凶','8':'凶','2':'大凶'},
-    '休门': {'1':'大吉','6':'大吉','7':'吉','8':'吉','4':'平','9':'平','3':'凶','2':'凶'},
-    '生门': {'8':'大吉','1':'大吉','3':'吉','4':'吉','9':'平','7':'平','2':'凶','6':'凶'},
-    '伤门': {'3':'吉','4':'吉','1':'平','9':'平','8':'凶','7':'凶','2':'大凶','6':'大凶'},
-    '杜门': {'4':'吉','3':'吉','9':'平','1':'平','7':'凶','6':'凶','2':'大凶','8':'大凶'},
-    '景门': {'9':'大吉','2':'吉','4':'吉','3':'平','1':'平','8':'凶','7':'凶','6':'大凶'},
-    '死门': {'2':'平','8':'平','1':'凶','9':'凶','4':'凶','3':'凶','6':'大凶','7':'大凶'},
-    '惊门': {'7':'平','6':'平','2':'凶','1':'凶','9':'凶','4':'凶','3':'大凶','8':'大凶'},
+    '开门':{'6':'大吉','1':'吉','7':'吉','4':'平','9':'平','3':'凶','8':'凶','2':'大凶'},
+    '休门':{'1':'大吉','6':'大吉','7':'吉','8':'吉','4':'平','9':'平','3':'凶','2':'凶'},
+    '生门':{'8':'大吉','1':'大吉','3':'吉','4':'吉','9':'平','7':'平','2':'凶','6':'凶'},
+    '伤门':{'3':'吉','4':'吉','1':'平','9':'平','8':'凶','7':'凶','2':'大凶','6':'大凶'},
+    '杜门':{'4':'吉','3':'吉','9':'平','1':'平','7':'凶','6':'凶','2':'大凶','8':'大凶'},
+    '景门':{'9':'大吉','2':'吉','4':'吉','3':'平','1':'平','8':'凶','7':'凶','6':'大凶'},
+    '死门':{'2':'平','8':'平','1':'凶','9':'凶','4':'凶','3':'凶','6':'大凶','7':'大凶'},
+    '惊门':{'7':'平','6':'平','2':'凶','1':'凶','9':'凶','4':'凶','3':'大凶','8':'大凶'},
 }
 
+# 节气日期范围（简化查表）
+JIEQI_RANGES = [
+    ((1,1),(1,5),'冬至'),((1,6),(1,20),'小寒'),((1,21),(1,31),'大寒'),
+    ((2,1),(2,3),'大寒'),((2,4),(2,18),'立春'),((2,19),(2,28),'雨水'),
+    ((3,1),(3,5),'雨水'),((3,6),(3,20),'惊蛰'),((3,21),(3,31),'春分'),
+    ((4,1),(4,4),'春分'),((4,5),(4,19),'清明'),((4,20),(4,30),'谷雨'),
+    ((5,1),(5,5),'谷雨'),((5,6),(5,20),'立夏'),((5,21),(5,31),'小满'),
+    ((6,1),(6,5),'小满'),((6,6),(6,21),'芒种'),((6,22),(6,30),'夏至'),
+    ((7,1),(7,6),'夏至'),((7,7),(7,22),'小暑'),((7,23),(7,31),'大暑'),
+    ((8,1),(8,6),'大暑'),((8,7),(8,22),'立秋'),((8,23),(8,31),'处暑'),
+    ((9,1),(9,6),'处暑'),((9,7),(9,22),'白露'),((9,23),(9,30),'秋分'),
+    ((10,1),(10,7),'秋分'),((10,8),(10,22),'寒露'),((10,23),(10,31),'霜降'),
+    ((11,1),(11,6),'霜降'),((11,7),(11,21),'立冬'),((11,22),(11,30),'小雪'),
+    ((12,1),(12,6),'小雪'),((12,7),(12,21),'大雪'),((12,22),(12,31),'冬至'),
+]
+
+YANG_JIEQI = ['冬至','小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑']
+
+JUSHU_MAP = {
+    '冬至':1,'小寒':2,'大寒':3,'立春':8,'雨水':9,'惊蛰':1,'春分':2,'清明':3,'谷雨':8,
+    '立夏':5,'小满':5,'芒种':6,'夏至':9,'小暑':8,'大暑':7,'立秋':2,'处暑':1,
+    '白露':9,'秋分':8,'寒露':7,'霜降':1,'立冬':4,'小雪':4,'大雪':5
+}
+
+# 日柱基准
+BASE_DATE = datetime.date(2026,1,1)
+BASE_ORDINAL = BASE_DATE.toordinal()
+BASE_GAN = 1   # 乙
+BASE_ZHI = 11  # 亥
+
+YUE_GAN_START = {
+    0:2,5:2,  # 甲己->丙
+    1:4,6:4,  # 乙庚->戊
+    2:6,7:6,  # 丙辛->庚
+    3:8,8:8,  # 丁壬->壬
+    4:0,9:0,  # 戊癸->甲
+}
+
+SHI_GAN_START = {
+    0:0,5:0,  # 甲己->甲
+    1:2,6:2,  # 乙庚->丙
+    2:4,7:4,  # 丙辛->戊
+    3:6,8:6,  # 丁壬->庚
+    4:8,9:8,  # 戊癸->壬
+}
+
+# ========== 自动推算 ==========
+def auto_calc_sizhu(year,month,day,hour):
+    # 年柱
+    nian_gan = (year-4)%10
+    nian_zhi = (year-4)%12
+    nianzhu = GAN[nian_gan]+ZHI[nian_zhi]
+    
+    # 月柱
+    start = YUE_GAN_START[nian_gan]
+    yue_gan = (start+month-1)%10
+    yue_zhi = (month+1)%12  # 正月寅=2
+    yuezhu = GAN[yue_gan]+ZHI[yue_zhi]
+    
+    # 日柱
+    d = datetime.date(year,month,day)
+    offset = d.toordinal()-BASE_ORDINAL
+    ri_gan = (BASE_GAN+offset)%10
+    ri_zhi = (BASE_ZHI+offset)%12
+    rizhu = GAN[ri_gan]+ZHI[ri_zhi]
+    
+    # 时柱
+    zhi_idx = (hour+1)//2%12
+    start = SHI_GAN_START[ri_gan]
+    shi_gan = (start+zhi_idx)%10
+    shizhu = GAN[shi_gan]+ZHI[zhi_idx]
+    
+    return nianzhu,yuezhu,rizhu,shizhu,zhi_idx
+
+def get_jieqi(year,month,day):
+    for (m_start,d_start),(m_end,d_end),jq in JIEQI_RANGES:
+        if month==m_start and d_start<=day<=d_end:
+            return jq
+    return '立春'
+
+def get_yinyang(jieqi):
+    return '阳' if jieqi in YANG_JIEQI else '阴'
+
+# ========== 排盘核心 ==========
 def get_xunkong(zhu):
-    for xun, kong in XUN_KONG.items():
+    for xun,kong in XUN_KONG.items():
         if zhu[0] in xun:
             return kong
     return ''
 
-def paipan_core(nianzhu, yuezhu, rizhu, shizhu, jieqi, ju_shu, yin_yang, lunar_month):
-    # 地盘（固定）
-    dipan = {1:'癸', 2:'己', 3:'戊', 4:'乙', 5:'丁', 6:'丙', 7:'辛', 8:'壬', 9:'庚'}
+def paipan_core(nianzhu,yuezhu,rizhu,shizhu,jieqi,ju_shu,yin_yang,lunar_month):
+    dipan = {1:'癸',2:'己',3:'戊',4:'乙',5:'丁',6:'丙',7:'辛',8:'壬',9:'庚'}
+    order = ['戊','己','庚','辛','壬','癸','丁','丙','乙']
     
-    # 局数简化：阳遁顺布，阴遁逆布
-    order = ['戊', '己', '庚', '辛', '壬', '癸', '丁', '丙', '乙']
-    
-    if yin_yang == '阳':
-        gong_order = [1, 8, 3, 4, 9, 2, 7, 6]
+    if yin_yang=='阳':
+        gong_order = [1,8,3,4,9,2,7,6]
     else:
-        gong_order = [9, 2, 7, 6, 1, 8, 3, 4]
+        gong_order = [9,2,7,6,1,8,3,4]
     
-    # 天盘干
-    tianpan_gan = {}
     start_idx = gong_order.index(ju_shu) if ju_shu in gong_order else 0
-    for i, g in enumerate(order):
-        idx = (start_idx + i) % 8 if yin_yang == '阳' else (start_idx - i) % 8
+    
+    tianpan_gan = {}
+    for i,g in enumerate(order):
+        idx = (start_idx+i)%8 if yin_yang=='阳' else (start_idx-i)%8
         gong = gong_order[idx]
         tianpan_gan[gong] = g
     
-    # 九星
-    xing_order = ['天蓬', '天任', '天冲', '天辅', '天英', '天芮', '天柱', '天心']
+    xing_order = ['天蓬','天任','天冲','天辅','天英','天芮','天柱','天心']
     tianpan_xing = {}
-    for i, xing in enumerate(xing_order):
-        idx = (start_idx + i) % 8 if yin_yang == '阳' else (start_idx - i) % 8
+    for i,xing in enumerate(xing_order):
+        idx = (start_idx+i)%8 if yin_yang=='阳' else (start_idx-i)%8
         gong = gong_order[idx]
         tianpan_xing[gong] = xing
     
-    # 值符/值使
-    zhifu = tianpan_xing.get(ju_shu, '天蓬')
-    men_map = {1:'休门', 8:'生门', 3:'伤门', 4:'杜门', 9:'景门', 2:'死门', 7:'惊门', 6:'开门'}
-    zhishi = men_map.get(ju_shu, '休门')
+    zhifu = tianpan_xing.get(ju_shu,'天蓬')
+    men_map = {1:'休门',8:'生门',3:'伤门',4:'杜门',9:'景门',2:'死门',7:'惊门',6:'开门'}
+    zhishi = men_map.get(ju_shu,'休门')
     zhishi_gong = ju_shu
     
-    # 人盘（八门）
     renpan = {}
     men_start = list(men_map.values()).index(zhishi)
-    for i, gong in enumerate(gong_order):
-        idx = (men_start + i) % 8 if yin_yang == '阳' else (men_start - i) % 8
-        renpan[gong] = BA[idx % 8]
+    for i,gong in enumerate(gong_order):
+        idx = (men_start+i)%8 if yin_yang=='阳' else (men_start-i)%8
+        renpan[gong] = BA[idx%8]
     
-    # 神盘（八神）
     shenpan = {}
     shen_start = gong_order.index(ju_shu) if ju_shu in gong_order else 0
-    for i, gong in enumerate(gong_order):
-        idx = (shen_start + i) % 8 if yin_yang == '阳' else (shen_start - i) % 8
-        shenpan[gong] = BA_SHEN[idx % 8]
+    for i,gong in enumerate(gong_order):
+        idx = (shen_start+i)%8 if yin_yang=='阳' else (shen_start-i)%8
+        shenpan[gong] = BA_SHEN[idx%8]
     
-    # 旬空
     xunkong_ri = get_xunkong(rizhu)
     xunkong_shi = get_xunkong(shizhu)
     
@@ -209,163 +318,201 @@ def paipan_core(nianzhu, yuezhu, rizhu, shizhu, jieqi, ju_shu, yin_yang, lunar_m
     ri_xunkong = kong_to_gong(xunkong_ri)
     shi_xunkong = kong_to_gong(xunkong_shi)
     
-    # 十二神将（简化）
     shenjiang = {}
     for gong in gong_order:
-        dg = dipan.get(gong, '')
+        dg = dipan.get(gong,'')
         if dg:
             idx = GAN.index(dg) if dg in GAN else 0
-            shenjiang[gong] = JIANG12[idx % 12]
+            shenjiang[gong] = JIANG12[idx%12]
     
-    # 三传（简化）
-    sc = {'初传': ZHI_GONG.get(rizhu[1], 1), '中传': ZHI_GONG.get(shizhu[1], 6), '末传': ZHI_GONG.get(yuezhu[1], 3)}
+    sc = {
+        '初传':ZHI_GONG.get(rizhu[1],1),
+        '中传':ZHI_GONG.get(shizhu[1],6),
+        '末传':ZHI_GONG.get(yuezhu[1],3)
+    }
     
-    # 宫位分析
     gong_analysis = {}
     for gong in gong_order:
-        xing = tianpan_xing.get(gong, '')
-        men = renpan.get(gong, '')
-        xing_ji = XING_JIXIONG.get(xing, {}).get(str(gong), '平')
-        men_ji = MEN_JIXIONG.get(men, {}).get(str(gong), '平')
+        xing = tianpan_xing.get(gong,'')
+        men = renpan.get(gong,'')
+        xing_ji = XING_JIXIONG.get(xing,{}).get(str(gong),'平')
+        men_ji = MEN_JIXIONG.get(men,{}).get(str(gong),'平')
         
-        scores = {'大吉':2, '吉':1, '平':0, '凶':-1, '大凶':-2}
-        total = scores.get(xing_ji, 0) + scores.get(men_ji, 0)
+        scores = {'大吉':2,'吉':1,'平':0,'凶':-1,'大凶':-2}
+        total = scores.get(xing_ji,0)+scores.get(men_ji,0)
         if gong in ri_xunkong or gong in shi_xunkong:
             total -= 1
         
-        if total >= 2: ping = '大吉'
-        elif total == 1: ping = '吉'
-        elif total == 0: ping = '平'
-        elif total == -1: ping = '凶'
-        else: ping = '大凶'
+        if total>=2: ping='大吉'
+        elif total==1: ping='吉'
+        elif total==0: ping='平'
+        elif total==-1: ping='凶'
+        else: ping='大凶'
         
-        gong_analysis[gong] = {'总评': ping, '吉凶分': total}
+        gong_analysis[gong] = {'总评':ping,'吉凶分':total}
     
     return {
-        '地盘': dipan, '天盘星': tianpan_xing, '天盘干': tianpan_gan,
-        '人盘': renpan, '神盘': shenpan, '十二神将': shenjiang,
-        '宫位分析': gong_analysis, '值符': zhifu, '值使': zhishi,
-        '值使落宫': zhishi_gong, '阴阳': yin_yang, '局数': ju_shu,
-        '节气': jieqi, '时旬空': xunkong_shi, '日旬空': xunkong_ri,
-        '时旬空宫': shi_xunkong, '日旬空宫': ri_xunkong, '三传': sc,
+        '地盘':dipan,'天盘星':tianpan_xing,'天盘干':tianpan_gan,
+        '人盘':renpan,'神盘':shenpan,'十二神将':shenjiang,
+        '宫位分析':gong_analysis,'值符':zhifu,'值使':zhishi,
+        '值使落宫':zhishi_gong,'阴阳':yin_yang,'局数':ju_shu,
+        '节气':jieqi,'时旬空':xunkong_shi,'日旬空':xunkong_ri,
+        '时旬空宫':shi_xunkong,'日旬空宫':ri_xunkong,'三传':sc,
     }
 
 # ========== 分析函数 ==========
-def analyze_nianming(result, nianming):
-    nian_gan = nianming[0]
-    nian_gong = None
-    for gong, gan in result['地盘'].items():
-        if gan == nian_gan:
-            nian_gong = gong
-            break
-    if not nian_gong:
-        return ""
-    a = result['宫位分析'].get(nian_gong, {})
-    lines = [f"【年命宫】{nianming} → {nian_gong}宫",
-             f"  总评: {a.get('总评', '未知')}({a.get('吉凶分', 0)}分)",
-             f"  天盘: {result['天盘星'].get(nian_gong, '')}{result['天盘干'].get(nian_gong, '')}",
-             f"  人盘: {result['人盘'].get(nian_gong, '')}",
-             f"  神盘: {result['神盘'].get(nian_gong, '')}"]
-    return '\n'.join(lines)
-
-def analyze_question(result, question):
-    YONGSHEN = {'考试':'景门', '走失':'六合', '疾病':'天芮', '投资':'甲子戊',
-                '工作':'开门', '求财':'生门', '婚姻':'六合', '出行':'九天',
-                '竞争':'伤门', '盗贼':'玄武', '凶杀':'白虎'}
-    yongshen = YONGSHEN.get(question, '')
-    if not yongshen:
-        return ""
-    gong = None
-    if yongshen in BA:
-        for g, m in result['人盘'].items():
-            if m == yongshen:
-                gong = g; break
-    elif yongshen == '天芮':
-        for g, x in result['天盘星'].items():
-            if x == yongshen:
-                gong = g; break
+def analyze_nianming(result,nianming):
+    lines = []
+    lines.append("<h4>👤 年命分析</h4>")
+    lines.append("<p>年命: "+nianming+"</p>")
     
-    lines = [f"【{question}占测】用神: {yongshen}"]
-    if gong:
-        a = result['宫位分析'].get(gong, {})
-        lines.append(f"  用神落{gong}宫 | {a.get('总评', '未知')}")
-        score = a.get('吉凶分', 0)
-        if score >= 2: lines.append(f"  ✅ {question}大吉")
-        elif score >= 0: lines.append(f"  ℹ️ {question}平平")
-        else: lines.append(f"  ⚠️ {question}不利")
-    return '\n'.join(lines)
+    nianming_gong = ZHI_GONG.get(nianming[1],'')
+    if nianming_gong:
+        a = result['宫位分析'].get(nianming_gong,{})
+        lines.append("<p>年命落"+str(nianming_gong)+"宫，总评: "+a.get('总评','未知')+"</p>")
+        
+        # 刑冲合害（简化）
+        ri_zhi = ''
+        for gong in [1,8,3,4,9,2,7,6]:
+            if result['地盘'].get(gong,'')==nianming[0]:
+                ri_zhi = result['人盘'].get(gong,'')
+                break
+        if ri_zhi:
+            lines.append("<p>日干临"+ri_zhi+"门</p>")
+    return ''.join(lines)
+
+def analyze_question(result,qtype):
+    lines = []
+    lines.append("<h4>🔮 占事分析 · "+qtype+"</h4>")
+    
+    # 用神取法
+    yongshen_map = {
+        '考试':'天辅+丁奇','走失':'六合+日干','疾病':'天芮+乙奇',
+        '投资':'生门+甲子戊','工作':'开门+年干','求财':'生门+甲子戊',
+        '婚姻':'六合+乙庚','出行':'日干+九宫','竞争':'值符+庚',
+    }
+    yongshen = yongshen_map.get(qtype,'值符+日干')
+    lines.append("<p><b>用神:</b> "+yongshen+"</p>")
+    
+    # 吉凶判断（简化）
+    zhishi_gong = result.get('值使落宫','')
+    zhishi_ping = result['宫位分析'].get(zhishi_gong,{}).get('总评','平')
+    lines.append("<p>值使落"+str(zhishi_gong)+"宫，总评: <b>"+zhishi_ping+"</b></p>")
+    
+    # 根据吉凶给建议
+    if zhishi_ping in ['大吉','吉']:
+        lines.append("<p><span style='color:#28a745'>✅ 吉象：值使落吉宫，所问之事有转机，宜主动推进。</span></p>")
+    elif zhishi_ping=='平':
+        lines.append("<p><span style='color:#ffc107'>⚠️ 平象：吉凶参半，宜观望等待，不可冒进。</span></p>")
+    else:
+        lines.append("<p><span style='color:#dc3545'>❌ 凶象：值使落凶宫，所问之事多阻滞，宜保守退守。</span></p>")
+    
+    return ''.join(lines)
 
 # ========== 渲染 ==========
 def render_pan(result):
-    lines.append("<div class='info-box'><h3>📋 盘局信息</h3>")
-    lines.append("<b>" + result.get('节气', '') + "</b> | " + result['阴阳'] + str(result['局数']) + "局<br>")
-    lines.append("值符: " + result['值符'] + " | 值使: " + result['值使'] + " | 值使落" + str(result['值使落宫']) + "宫<br>")
-    lines.append("旬空: 时" + result['时旬空'] + "→" + str(result['时旬空宫']) + " 日" + result['日旬空'] + "→" + str(result['日旬空宫']))
+    lines = []
+    lines.append("<div class='card'>")
+    lines.append("<div class='card-title'>📋 盘局信息</div>")
+    lines.append("<div class='info-line'>")
+    lines.append("<b>"+result.get('节气','')+"</b> | "+result['阴阳']+"遁"+str(result['局数'])+"局<br>")
+    lines.append("值符: "+result['值符']+" | 值使: "+result['值使']+" | 值使落"+str(result['值使落宫'])+"宫<br>")
+    lines.append("旬空: 时"+result['时旬空']+"→"+str(result['时旬空宫'])+" 日"+result['日旬空']+"→"+str(result['日旬空宫']))
+    lines.append("</div>")
     lines.append("</div>")
     
+    lines.append("<div class='card'>")
+    lines.append("<div class='card-title'>🧭 九宫排盘</div>")
     lines.append("<div class='pan-grid'>")
-    for gong in [4, 9, 2, 3, 5, 7, 8, 1, 6]:
-        if gong == 5: continue
-        a = result['宫位分析'].get(gong, {})
-        score = a.get('吉凶分', 0)
-        css = 'gong-daji' if score >= 2 else ('gong-jixiong' if score == 1 else ('gong-xiong' if score == -1 else ('gong-daxiong' if score <= -2 else '')))
-        star = "⭐" if gong == result.get('值使落宫') else ""
+    for gong in [4,9,2,3,5,7,8,1,6]:
+        if gong==5:
+            lines.append("<div class='gong' style='display:flex;align-items:center;justify-content:center;background:rgba(212,175,55,0.1)'><div style='color:#d4af37;font-size:1.2em;font-weight:700'>中五宫</div></div>")
+            continue
+        a = result['宫位分析'].get(gong,{})
+        score = a.get('吉凶分',0)
+        css = 'gong-daji' if score>=2 else ('gong-jixiong' if score==1 else ('gong-xiong' if score==-1 else ('gong-daxiong' if score<=-2 else '')))
+        star = "⭐" if gong==result.get('值使落宫') else ""
         
-        lines.append("<div class='gong " + css + "'>")
-        lines.append("<div class='gong-header'>" + str(gong) + "宫" + star + "</div>")
-        lines.append("<div class='gong-row'><span class='label'>地:</span> " + result['地盘'].get(gong, '') + "</div>")
-        lines.append("<div class='gong-row'><span class='label'>天:</span> " + result['天盘星'].get(gong, '') + result['天盘干'].get(gong, '') + "</div>")
-        lines.append("<div class='gong-row'><span class='label'>人:</span> " + result['人盘'].get(gong, '') + "</div>")
-        lines.append("<div class='gong-row'><span class='label'>神:</span> " + result['神盘'].get(gong, '') + "</div>")
-        lines.append("<div class='gong-row'><span class='label'>将:</span> " + result['十二神将'].get(gong, '') + "</div>")
-        color = 'green' if score > 0 else ('red' if score < 0 else '#666')
-        lines.append("<div class='gong-row' style='color:" + color + "'><b>" + a.get('总评', '未知') + "</b></div>")
+        lines.append("<div class='gong "+css+"'>")
+        lines.append("<div class='gong-header'>"+str(gong)+"宫<span class='gong-star'>"+star+"</span></div>")
+        lines.append("<div class='gong-row'><span class='label'>地:</span>"+result['地盘'].get(gong,'')+"</div>")
+        lines.append("<div class='gong-row'><span class='label'>天:</span>"+result['天盘星'].get(gong,'')+result['天盘干'].get(gong,'')+"</div>")
+        lines.append("<div class='gong-row'><span class='label'>人:</span>"+result['人盘'].get(gong,'')+"</div>")
+        lines.append("<div class='gong-row'><span class='label'>神:</span>"+result['神盘'].get(gong,'')+"</div>")
+        lines.append("<div class='gong-row'><span class='label'>将:</span>"+result['十二神将'].get(gong,'')+"</div>")
+        color = '#28a745' if score>0 else ('#dc3545' if score<0 else '#888')
+        lines.append("<div class='gong-ping' style='color:"+color+"'>"+a.get('总评','未知')+"</div>")
         lines.append("</div>")
     lines.append("</div>")
     
     sc = result['三传']
-    lines.append("<div class='info-box'><h3>📊 三传</h3>")
-    lines.append("初传" + str(sc['初传']) + "宫 | 中传" + str(sc['中传']) + "宫 | 末传" + str(sc['末传']) + "宫")
+    lines.append("<div class='sanchuan'>")
+    lines.append("<span><b>初传</b> "+str(sc['初传'])+"宫</span>")
+    lines.append("<span><b>中传</b> "+str(sc['中传'])+"宫</span>")
+    lines.append("<span><b>末传</b> "+str(sc['末传'])+"宫</span>")
+    lines.append("</div>")
     lines.append("</div>")
     
     return '\n'.join(lines)
 
 # ========== 事件绑定 ==========
-@when("click", "#btn-pai")
+@when("click","#btn-pai")
 def on_click(event):
     year = int(document.getElementById("year").value)
     month = int(document.getElementById("month").value)
     day = int(document.getElementById("day").value)
-    jieqi = document.getElementById("jieqi").value
-    lunar_month = int(document.getElementById("lunar_month").value)
-    nianzhu = document.getElementById("nianzhu").value
-    yuezhu = document.getElementById("yuezhu").value
-    rizhu = document.getElementById("rizhu").value
-    shizhu = document.getElementById("shizhu").value
+    hour = int(document.getElementById("hour").value)
     nianming = document.getElementById("nianming").value
     
-    ju_shu = (year + month + day) % 9
-    if ju_shu == 0: ju_shu = 9
+    # 检查是否使用高级设置
+    adv = document.getElementById("advancedPanel")
+    if adv.classList.contains("open"):
+        jieqi = document.getElementById("jieqi").value
+        lunar_month = int(document.getElementById("lunar_month").value)
+        nianzhu = document.getElementById("nianzhu").value
+        yuezhu = document.getElementById("yuezhu").value
+        rizhu = document.getElementById("rizhu").value
+        shizhu = document.getElementById("shizhu").value
+        yin_yang = document.getElementById("yinyang").value
+        ju_shu = int(document.getElementById("jushu").value)
+    else:
+        # 自动推算
+        nianzhu,yuezhu,rizhu,shizhu,zhi_idx = auto_calc_sizhu(year,month,day,hour)
+        jieqi = get_jieqi(year,month,day)
+        yin_yang = get_yinyang(jieqi)
+        ju_shu = JUSHU_MAP.get(jieqi,1)
+        lunar_month = month
     
-    yang_jieqi = ['冬至','小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨']
-    yin_yang = '阳' if jieqi in yang_jieqi else '阴'
-    
-    result = paipan_core(nianzhu, yuezhu, rizhu, shizhu, jieqi, ju_shu, yin_yang, lunar_month)
+    result = paipan_core(nianzhu,yuezhu,rizhu,shizhu,jieqi,ju_shu,yin_yang,lunar_month)
     
     html = render_pan(result)
     
+    # 显示自动推算的四柱
+    auto_info = "<div class='card'><div class='card-title'>📐 四柱</div>"
+    auto_info += "<div class='info-line'>年柱: "+nianzhu+" | 月柱: "+yuezhu+" | 日柱: "+rizhu+" | 时柱: "+shizhu+"</div>"
+    auto_info += "</div>"
+    html = auto_info + html
+    
     if nianming:
-        html = html + "<div class='analysis-result'>" + analyze_nianming(result, nianming) + "</div>"
+        html = html + "<div class='card'><div class='analysis-box'>"+analyze_nianming(result,nianming)+"</div></div>"
     
     q = document.getElementById("question")
     if q and q.value:
-        html = html + "<div class='analysis-result'>" + analyze_question(result, q.value) + "</div>"
+        html = html + "<div class='card'><div class='analysis-box'>"+analyze_question(result,q.value)+"</div></div>"
     
-    document.getElementById("result").innerHTML = html
+    result_div = document.getElementById("result")
+    result_div.innerHTML = html
+    result_div.classList.remove("hidden")
 
 # 启用按钮
 document.getElementById("btn-pai").disabled = False
 document.getElementById("btn-pai").textContent = "🔮 起局排盘"
+
+# 页面加载完成后自动排盘一次
+from js import setTimeout
+def auto_trigger():
+    document.getElementById("btn-pai").click()
+setTimeout(auto_trigger, 800)
 </py-script>
 
 </body>
