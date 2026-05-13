@@ -297,11 +297,10 @@ def analyze_question(result, question):
 
 # ========== 渲染 ==========
 def render_pan(result):
-    lines = []
-    lines.append(f"<div class='info-box'><h3>📋 盘局信息</h3>")
-    lines.append(f"<b>{result.get('节气', '')}</b> | {result['阴阳']}{result['局数']}局<br>")
-    lines.append(f"值符: {result['值符']} | 值使: {result['值使']} | 值使落{result['值使落宫']}宫<br>")
-    lines.append(f"旬空: 时{result['时旬空']}→{result['时旬空宫']} 日{result['日旬空']}→{result['日旬空宫']}")
+    lines.append("<div class='info-box'><h3>📋 盘局信息</h3>")
+    lines.append("<b>" + result.get('节气', '') + "</b> | " + result['阴阳'] + str(result['局数']) + "局<br>")
+    lines.append("值符: " + result['值符'] + " | 值使: " + result['值使'] + " | 值使落" + str(result['值使落宫']) + "宫<br>")
+    lines.append("旬空: 时" + result['时旬空'] + "→" + str(result['时旬空宫']) + " 日" + result['日旬空'] + "→" + str(result['日旬空宫']))
     lines.append("</div>")
     
     lines.append("<div class='pan-grid'>")
@@ -312,21 +311,21 @@ def render_pan(result):
         css = 'gong-daji' if score >= 2 else ('gong-jixiong' if score == 1 else ('gong-xiong' if score == -1 else ('gong-daxiong' if score <= -2 else '')))
         star = "⭐" if gong == result.get('值使落宫') else ""
         
-        lines.append(f"<div class='gong {css}'>")
-        lines.append(f"<div class='gong-header'>{gong}宫{star}</div>")
-        lines.append(f"<div class='gong-row'><span class='label'>地:</span> {result['地盘'].get(gong, '')}</div>")
-        lines.append(f"<div class='gong-row'><span class='label'>天:</span> {result['天盘星'].get(gong, '')}{result['天盘干'].get(gong, '')}</div>")
-        lines.append(f"<div class='gong-row'><span class='label'>人:</span> {result['人盘'].get(gong, '')}</div>")
-        lines.append(f"<div class='gong-row'><span class='label'>神:</span> {result['神盘'].get(gong, '')}</div>")
-        lines.append(f"<div class='gong-row'><span class='label'>将:</span> {result['十二神将'].get(gong, '')}</div>")
+        lines.append("<div class='gong " + css + "'>")
+        lines.append("<div class='gong-header'>" + str(gong) + "宫" + star + "</div>")
+        lines.append("<div class='gong-row'><span class='label'>地:</span> " + result['地盘'].get(gong, '') + "</div>")
+        lines.append("<div class='gong-row'><span class='label'>天:</span> " + result['天盘星'].get(gong, '') + result['天盘干'].get(gong, '') + "</div>")
+        lines.append("<div class='gong-row'><span class='label'>人:</span> " + result['人盘'].get(gong, '') + "</div>")
+        lines.append("<div class='gong-row'><span class='label'>神:</span> " + result['神盘'].get(gong, '') + "</div>")
+        lines.append("<div class='gong-row'><span class='label'>将:</span> " + result['十二神将'].get(gong, '') + "</div>")
         color = 'green' if score > 0 else ('red' if score < 0 else '#666')
-        lines.append(f"<div class='gong-row' style='color:{color}'><b>{a.get('总评', '未知')}</b></div>")
+        lines.append("<div class='gong-row' style='color:" + color + "'><b>" + a.get('总评', '未知') + "</b></div>")
         lines.append("</div>")
     lines.append("</div>")
     
     sc = result['三传']
-    lines.append(f"<div class='info-box'><h3>📊 三传</h3>")
-    lines.append(f"初传{sc['初传']}宫 | 中传{sc['中传']}宫 | 末传{sc['末传']}宫")
+    lines.append("<div class='info-box'><h3>📊 三传</h3>")
+    lines.append("初传" + str(sc['初传']) + "宫 | 中传" + str(sc['中传']) + "宫 | 末传" + str(sc['末传']) + "宫")
     lines.append("</div>")
     
     return '\n'.join(lines)
@@ -356,11 +355,11 @@ def on_click(event):
     html = render_pan(result)
     
     if nianming:
-        html += f"<div class='analysis-result'>{analyze_nianming(result, nianming)}</div>"
+        html = html + "<div class='analysis-result'>" + analyze_nianming(result, nianming) + "</div>"
     
     q = document.getElementById("question")
     if q and q.value:
-        html += f"<div class='analysis-result'>{analyze_question(result, q.value)}</div>"
+        html = html + "<div class='analysis-result'>" + analyze_question(result, q.value) + "</div>"
     
     document.getElementById("result").innerHTML = html
 
