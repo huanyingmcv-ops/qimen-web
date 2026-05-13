@@ -263,10 +263,11 @@ def get_yinyang(jieqi):
 
 # ========== 排盘核心 ==========
 def get_xunkong(zhu):
-    for xun,kong in XUN_KONG.items():
-        if zhu[0] in xun:
-            return kong
-    return ''
+    gan_idx = GAN.index(zhu[0])
+    zhi_idx = ZHI.index(zhu[1])
+    xun_zhi_idx = (zhi_idx - gan_idx) % 12
+    xun = '甲' + ZHI[xun_zhi_idx]
+    return XUN_KONG.get(xun, '')
 
 def paipan_core(nianzhu,yuezhu,rizhu,shizhu,jieqi,ju_shu,yin_yang,lunar_month):
     dipan = {1:'癸',2:'己',3:'戊',4:'乙',5:'丁',6:'丙',7:'辛',8:'壬',9:'庚'}
