@@ -401,11 +401,11 @@ def analyze_question(result,qtype):
     
     # 根据吉凶给建议
     if zhishi_ping in ['大吉','吉']:
-        lines.append("<p><span style='color:#28a745'>✅ 吉象：值使落吉宫，所问之事有转机，宜主动推进。</span></p>")
+        lines.append("<p>【吉象】值使落吉宫，所问之事有转机，宜主动推进。</p>")
     elif zhishi_ping=='平':
-        lines.append("<p><span style='color:#ffc107'>⚠️ 平象：吉凶参半，宜观望等待，不可冒进。</span></p>")
+        lines.append("<p>【平象】吉凶参半，宜观望等待，不可冒进。</p>")
     else:
-        lines.append("<p><span style='color:#dc3545'>❌ 凶象：值使落凶宫，所问之事多阻滞，宜保守退守。</span></p>")
+        lines.append("<p>【凶象】值使落凶宫，所问之事多阻滞，宜保守退守。</p>")
     
     return ''.join(lines)
 
