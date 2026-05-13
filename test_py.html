@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+<script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+</head>
+<body>
+<div id="result">Loading...</div>
+<script type="py">
+from js import document
+
+# 测试1: 简单字符串
+test1 = "hello"
+document.getElementById("result").innerHTML = "Test 1 OK: " + test1
+
+# 测试2: 包含小于号的字符串
+test2 = "5 < 10"
+document.getElementById("result").innerHTML += "<br>Test 2 OK: " + test2
+
+# 测试3: 包含HTML标签的字符串
+test3 = "<div class='x'>hello</div>"
+document.getElementById("result").innerHTML += "<br>Test 3 OK: " + test3
+
+# 测试4: 列表append
+def test4():
+    lines = []
+    lines.append("<div class='card'>")
+    lines.append("</div>")
+    return '\n'.join(lines)
+
+document.getElementById("result").innerHTML += "<br>Test 4 OK: code parsed"
+</script>
+</body>
+</html>
